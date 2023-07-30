@@ -40,11 +40,15 @@ class MediaLibraryServiceProvider extends ServiceProvider
 
     protected function registerPublishables(): void
     {
+        if (! $this->app->runningInConsole()) {
+            return;
+        }
+
         $this->publishes([
             __DIR__.'/../config/media-library.php' => config_path('media-library.php'),
         ], 'config');
 
-        if (! class_exists('CreateMediaTable')) {
+        if (empty(glob(database_path('migrations/*_create_media_table.php')))) {
             $this->publishes([
                 __DIR__.'/../database/migrations/create_media_table.php.stub' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_media_table.php'),
             ], 'migrations');

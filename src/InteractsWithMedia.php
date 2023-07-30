@@ -547,7 +547,7 @@ trait InteractsWithMedia
         $collection = new MediaCollections\Models\Collections\MediaCollection($collection);
 
         return $collection
-            ->filter(fn (Media $mediaItem) => $mediaItem->collection_name === $collectionName)
+            ->filter(fn (Media $mediaItem) => $collectionName !== '*' ? $mediaItem->collection_name === $collectionName : true)
             ->sortBy('order_column')
             ->values();
     }
@@ -612,5 +612,22 @@ trait InteractsWithMedia
         });
 
         $this->registerMediaConversions($media);
+    }
+
+    public function __sleep(): array
+    {
+        // do not serialize properties from the trait
+        return collect(parent::__sleep())
+            ->reject(
+                fn ($key) => in_array(
+                    $key,
+                    [
+                        'mediaConversions',
+                        'mediaCollections',
+                        'unAttachedMediaLibraryItems',
+                        'deletePreservingMedia',
+                    ]
+                )
+            )->toArray();
     }
 }

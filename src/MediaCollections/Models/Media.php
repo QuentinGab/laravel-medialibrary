@@ -33,6 +33,7 @@ use Spatie\MediaLibrary\Support\UrlGenerator\UrlGeneratorFactory;
 use Spatie\MediaLibraryPro\Models\TemporaryUpload;
 
 /**
+ * @property-read string $uuid
  * @property-read string $type
  * @property-read string $extension
  * @property-read string $humanReadableSize
@@ -266,7 +267,7 @@ class Media extends Model implements Responsable, Htmlable, Attachable
 
         $this->generated_conversions = $generatedConversions;
 
-        $this->save();
+        $this->saveOrTouch();
 
         return $this;
     }
@@ -279,7 +280,7 @@ class Media extends Model implements Responsable, Htmlable, Attachable
 
         $this->generated_conversions = $generatedConversions;
 
-        $this->save();
+        $this->saveOrTouch();
 
         return $this;
     }
@@ -450,5 +451,14 @@ class Media extends Model implements Responsable, Htmlable, Attachable
     public function toMailAttachment(): Attachment
     {
         return $this->mailAttachment();
+    }
+
+    protected function saveOrTouch(): bool
+    {
+        if (! $this->exists || $this->isDirty()) {
+            return $this->save();
+        }
+
+        return $this->touch();
     }
 }
